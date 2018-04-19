@@ -483,7 +483,18 @@ if [ "`qubes-prefs -g default-kernel`" == "%version-%plainrel" ]; then
     echo "This kernel version is set as default VM kernel, cannot remove"
     exit 1
 fi
-if qvm-ls --kernel | grep -qw "%version-%plainrel"; then
+
+kernel_used=false
+if qvm-ls --kernel 2>/dev/null >/dev/null; then
+    if qvm-ls --kernel | grep -qw "%version-%plainrel"; then
+        kernel_used=true
+    fi
+else
+    if qvm-ls --raw-data --fields kernel | grep -Fxq "%version-%plainrel"; then
+        kernel_used=true
+    fi
+fi
+if [ "$kernel_used" == true ]; then
     echo "This kernel version is used by at least one VM, cannot remove"
     exit 1
 fi
